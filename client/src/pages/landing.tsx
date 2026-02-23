@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight, CheckCircle2, Terminal, Code2, BrainCircuit, Sparkles, Trophy, Share2 } from "lucide-react";
 import { motion } from "framer-motion";
+// TODO: Add product screenshots to attached_assets directory
 import habitsImg from "@assets/image_1770021142728.png";
 import analyticsImg from "@assets/image_1770021201894.png";
 import streakImg from "@assets/image_1770021222554.png";
@@ -109,7 +110,9 @@ export default function LandingPage() {
                 </div>
                 <span className="text-xs text-muted-foreground font-mono">dashboard_overview.png</span>
               </div>
-              <img src={habitsImg} alt="Dashboard Overview" className="w-full h-auto" />
+              <div className="w-full h-96 overflow-hidden">
+                <img src={habitsImg} alt="Dashboard Overview" className="w-full h-full object-cover" />
+              </div>
             </motion.div>
 
             <div className="lg:col-span-4 space-y-6">
@@ -117,13 +120,17 @@ export default function LandingPage() {
                 whileHover={{ scale: 1.02 }}
                 className="rounded-3xl overflow-hidden border border-border/50 shadow-xl bg-card hover-elevate cursor-pointer"
               >
-                <img src={analyticsImg} alt="Analytics" className="w-full h-auto" />
+                <div className="w-full h-48 overflow-hidden">
+                  <img src={analyticsImg} alt="Analytics" className="w-full h-full object-cover" />
+                </div>
               </motion.div>
               <motion.div 
                 whileHover={{ scale: 1.02 }}
                 className="rounded-3xl overflow-hidden border border-border/50 shadow-xl bg-card hover-elevate cursor-pointer"
               >
-                <img src={streakImg} alt="Consistency" className="w-full h-auto" />
+                <div className="w-full h-48 overflow-hidden">
+                  <img src={streakImg} alt="Consistency" className="w-full h-full object-cover" />
+                </div>
               </motion.div>
             </div>
           </div>
