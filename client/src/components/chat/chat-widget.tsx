@@ -12,7 +12,7 @@ export function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const [conversationId, setConversationId] = useState<number | null>(null);
-  
+
   const createConversation = useCreateConversation();
   const { messages, sendMessage, isStreaming, streamedContent } = useChat(conversationId);
   const scrollRef = useRef<HTMLDivElement>(null);

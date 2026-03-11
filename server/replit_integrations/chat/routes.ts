@@ -78,11 +78,6 @@ export function registerChatRoutes(app: Express): void {
         content: m.content,
       }));
 
-      // Set up SSE
-      res.setHeader("Content-Type", "text/event-stream");
-      res.setHeader("Cache-Control", "no-cache");
-      res.setHeader("Connection", "keep-alive");
-
       const geminiUrl = getGeminiUrl("generateContent");
       if (!geminiUrl) {
         return res.status(500).json({ error: "Gemini API key is not configured" });
@@ -107,6 +102,11 @@ export function registerChatRoutes(app: Express): void {
         console.error("Gemini chat error:", errorText);
         return res.status(500).json({ error: "Failed to send message" });
       }
+
+      // Set up SSE - only after we know the API call will work
+      res.setHeader("Content-Type", "text/event-stream");
+      res.setHeader("Cache-Control", "no-cache");
+      res.setHeader("Connection", "keep-alive");
 
       const geminiData = await geminiResponse.json();
       const fullResponse =
