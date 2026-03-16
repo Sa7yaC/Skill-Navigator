@@ -10,7 +10,7 @@ export function getApiUrl(): string {
   
   // In development, use localhost:5000
   if (import.meta.env.DEV) {
-    return 'http://localhost:5000';
+    return 'https://skill-navigator-r43j.onrender.com';
   }
   
   // In production, use current origin
