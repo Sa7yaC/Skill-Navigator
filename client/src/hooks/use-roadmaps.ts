@@ -1,10 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, buildUrl } from "@shared/routes";
 
-// Types derived from API response schemas (best practice when shared types aren't explicitly exported for every return shape)
-// But here we rely on the Zod schemas in the routes file implicitly handled by the fetcher, 
-// and we can type the data based on the @shared/schema exports.
-import type { Roadmap, RoadmapWithSteps, Step, EnrollmentWithRoadmap, DailyStat } from "@shared/schema";
+// Types derived from client-types (no database dependencies)
+import type { Roadmap, RoadmapWithSteps, Step, EnrollmentWithRoadmap, DailyStat } from "@shared/client-types";
 
 // --- ROADMAPS ---
 

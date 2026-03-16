@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { insertRoadmapSchema, insertStepSchema, roadmaps, steps, enrollments, dailyStats } from './schema';
+import type { Roadmap, Step, RoadmapWithSteps, Enrollment, EnrollmentWithRoadmap, DailyStat } from './client-types';
 
 export const errorSchemas = {
   validation: z.object({
@@ -17,29 +17,70 @@ export const errorSchemas = {
   }),
 };
 
+// Type schemas for validation (simplified for client)
+const RoadmapSchema = z.object({
+  id: z.number(),
+  slug: z.string(),
+  title: z.string(),
+  description: z.string(),
+  category: z.string(),
+  difficulty: z.string(),
+  createdAt: z.date(),
+}) as z.ZodType<Roadmap>;
+
+const StepSchema = z.object({
+  id: z.number(),
+  roadmapId: z.number(),
+  title: z.string(),
+  description: z.string(),
+  content: z.string(),
+  order: z.number(),
+  estimatedMinutes: z.number(),
+  resources: z.array(z.object({
+    title: z.string(),
+    url: z.string(),
+    type: z.enum(['video', 'article', 'docs']),
+  })),
+}) as z.ZodType<Step>;
+
+const EnrollmentSchema = z.object({
+  id: z.number(),
+  userId: z.string(),
+  roadmapId: z.number(),
+  status: z.string(),
+  progress: z.number(),
+  createdAt: z.date(),
+  lastAccessedAt: z.date(),
+}) as z.ZodType<Enrollment>;
+
 export const api = {
   roadmaps: {
     list: {
       method: 'GET' as const,
       path: '/api/roadmaps',
       responses: {
-        200: z.array(z.custom<typeof roadmaps.$inferSelect>()),
+        200: z.array(RoadmapSchema),
       },
     },
     get: {
       method: 'GET' as const,
       path: '/api/roadmaps/:id',
       responses: {
-        200: z.custom<typeof roadmaps.$inferSelect & { steps: typeof steps.$inferSelect[] }>(),
+        200: RoadmapSchema.extend({ steps: z.array(StepSchema) }).nullable(),
         404: errorSchemas.notFound,
       },
     },
-    create: { // Admin only in real app, simplified here
+    create: {
       method: 'POST' as const,
       path: '/api/roadmaps',
-      input: insertRoadmapSchema,
+      input: z.object({
+        title: z.string(),
+        description: z.string(),
+        category: z.string(),
+        difficulty: z.enum(['beginner', 'intermediate', 'advanced']),
+      }),
       responses: {
-        201: z.custom<typeof roadmaps.$inferSelect>(),
+        201: RoadmapSchema,
         400: errorSchemas.validation,
       },
     },
@@ -48,9 +89,20 @@ export const api = {
     create: {
       method: 'POST' as const,
       path: '/api/roadmaps/:roadmapId/steps',
-      input: insertStepSchema.omit({ roadmapId: true }),
+      input: z.object({
+        title: z.string(),
+        description: z.string(),
+        content: z.string(),
+        order: z.number(),
+        estimatedMinutes: z.number().default(30),
+        resources: z.array(z.object({
+          title: z.string(),
+          url: z.string(),
+          type: z.enum(['video', 'article', 'docs']),
+        })).default([]),
+      }),
       responses: {
-        201: z.custom<typeof steps.$inferSelect>(),
+        201: StepSchema,
         400: errorSchemas.validation,
       },
     },
@@ -60,14 +112,14 @@ export const api = {
       method: 'GET' as const,
       path: '/api/enrollments',
       responses: {
-        200: z.array(z.custom<typeof enrollments.$inferSelect & { roadmap: typeof roadmaps.$inferSelect }>()),
+        200: z.array(EnrollmentSchema.extend({ roadmap: RoadmapSchema })),
       },
     },
     enroll: {
       method: 'POST' as const,
       path: '/api/roadmaps/:roadmapId/enroll',
       responses: {
-        201: z.custom<typeof enrollments.$inferSelect>(),
+        201: EnrollmentSchema,
         400: errorSchemas.validation,
         401: errorSchemas.unauthorized,
       },
@@ -76,7 +128,7 @@ export const api = {
       method: 'GET' as const,
       path: '/api/enrollments/:id',
       responses: {
-        200: z.custom<typeof enrollments.$inferSelect & { roadmap: typeof roadmaps.$inferSelect }>(),
+        200: EnrollmentSchema.extend({ roadmap: RoadmapSchema }),
         404: errorSchemas.notFound,
       },
     },
@@ -87,7 +139,7 @@ export const api = {
       path: '/api/enrollments/:enrollmentId/steps/:stepId/complete',
       responses: {
         200: z.object({
-          enrollment: z.custom<typeof enrollments.$inferSelect>(),
+          enrollment: EnrollmentSchema,
           newProgress: z.number(),
         }),
         400: errorSchemas.validation,
@@ -104,7 +156,13 @@ export const api = {
           streak: z.number(),
           totalSteps: z.number(),
           totalMinutes: z.number(),
-          dailyActivity: z.array(z.custom<typeof dailyStats.$inferSelect>()),
+          dailyActivity: z.array(z.object({
+            id: z.number(),
+            userId: z.string(),
+            date: z.date(),
+            minutesSpent: z.number(),
+            stepsCompleted: z.number(),
+          })),
         }),
       },
     },
