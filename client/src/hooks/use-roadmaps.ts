@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, buildUrl } from "@shared/routes";
+import { buildApiUrl } from "@/lib/api";
 
 // Types derived from client-types (no database dependencies)
 import type { Roadmap, RoadmapWithSteps, Step, EnrollmentWithRoadmap, DailyStat } from "@shared/client-types";
@@ -15,7 +16,7 @@ export function useRoadmaps() {
   return useQuery({
     queryKey: [api.roadmaps.list.path],
     queryFn: async () => {
-      const res = await fetch(api.roadmaps.list.path, { headers: getAuthHeader() });
+      const res = await fetch(buildApiUrl(api.roadmaps.list.path), { headers: getAuthHeader() });
       if (!res.ok) throw new Error("Failed to fetch roadmaps");
       return await res.json() as Roadmap[];
     },
@@ -26,7 +27,7 @@ export function useRoadmap(id: number) {
   return useQuery({
     queryKey: [api.roadmaps.get.path, id],
     queryFn: async () => {
-      const url = buildUrl(api.roadmaps.get.path, { id });
+      const url = buildApiUrl(buildUrl(api.roadmaps.get.path, { id }));
       const res = await fetch(url, { headers: getAuthHeader() });
       if (res.status === 404) return null;
       if (!res.ok) throw new Error("Failed to fetch roadmap");
@@ -42,7 +43,7 @@ export function useEnrollments() {
   return useQuery({
     queryKey: [api.enrollments.list.path],
     queryFn: async () => {
-      const res = await fetch(api.enrollments.list.path, { headers: getAuthHeader() });
+      const res = await fetch(buildApiUrl(api.enrollments.list.path), { headers: getAuthHeader() });
       if (!res.ok) throw new Error("Failed to fetch enrollments");
       return await res.json() as EnrollmentWithRoadmap[];
     },
@@ -53,7 +54,7 @@ export function useEnrollment(id: number) {
   return useQuery({
     queryKey: [api.enrollments.get.path, id],
     queryFn: async () => {
-      const url = buildUrl(api.enrollments.get.path, { id });
+      const url = buildApiUrl(buildUrl(api.enrollments.get.path, { id }));
       const res = await fetch(url, { headers: getAuthHeader() });
       if (res.status === 404) return null;
       if (!res.ok) throw new Error("Failed to fetch enrollment");
@@ -67,7 +68,7 @@ export function useEnrollInRoadmap() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (roadmapId: number) => {
-      const url = buildUrl(api.enrollments.enroll.path, { roadmapId });
+      const url = buildApiUrl(buildUrl(api.enrollments.enroll.path, { roadmapId }));
       const res = await fetch(url, {
         method: "POST",
         headers: { 
@@ -102,7 +103,7 @@ export function useCompleteStep() {
       attemptNumber?: number
       startedAt?: Date
     }) => {
-      const url = buildUrl(api.progress.completeStep.path, { enrollmentId, stepId });
+      const url = buildApiUrl(buildUrl(api.progress.completeStep.path, { enrollmentId, stepId }));
       const res = await fetch(url, {
         method: "POST",
         headers: { 
@@ -140,7 +141,7 @@ export function useStats() {
   return useQuery({
     queryKey: [api.stats.get.path],
     queryFn: async () => {
-      const res = await fetch(api.stats.get.path, { headers: getAuthHeader() });
+      const res = await fetch(buildApiUrl(api.stats.get.path), { headers: getAuthHeader() });
       if (!res.ok) throw new Error("Failed to fetch stats");
       return await res.json() as {
         streak: number;
@@ -158,7 +159,7 @@ export function useMlSkillLevel(enrollmentId: number) {
   return useQuery({
     queryKey: [api.ml.predictSkillLevel.path, enrollmentId],
     queryFn: async () => {
-      const res = await fetch(api.ml.predictSkillLevel.path, {
+      const res = await fetch(buildApiUrl(api.ml.predictSkillLevel.path), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -177,7 +178,7 @@ export function useMlProgressSpeed(enrollmentId: number) {
   return useQuery({
     queryKey: [api.ml.predictProgressSpeed.path, enrollmentId],
     queryFn: async () => {
-      const res = await fetch(api.ml.predictProgressSpeed.path, {
+      const res = await fetch(buildApiUrl(api.ml.predictProgressSpeed.path), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -196,7 +197,7 @@ export function useMlDropoutRisk(enrollmentId: number) {
   return useQuery({
     queryKey: [api.ml.predictDropoutRisk.path, enrollmentId],
     queryFn: async () => {
-      const res = await fetch(api.ml.predictDropoutRisk.path, {
+      const res = await fetch(buildApiUrl(api.ml.predictDropoutRisk.path), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -217,7 +218,7 @@ export function useCreateAssessment() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ enrollmentId, score }: { enrollmentId: number; score: number }) => {
-      const res = await fetch(api.assessments.create.path, {
+      const res = await fetch(buildApiUrl(api.assessments.create.path), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -248,7 +249,7 @@ export function useGenerateCustomRoadmap() {
       weakAreas?: string; 
       skillLevel: "beginner" | "intermediate" | "advanced" 
     }) => {
-      const res = await fetch(api.assessments.generateCustomRoadmap.path, {
+      const res = await fetch(buildApiUrl(api.assessments.generateCustomRoadmap.path), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
