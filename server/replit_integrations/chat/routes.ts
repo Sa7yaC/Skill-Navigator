@@ -73,7 +73,7 @@ export function registerChatRoutes(app: Express): void {
     }
   });
 
-  // 🔥 CHAT ENDPOINT WITH DB CONTEXT
+  // 🔥 CHAT ENDPOINT WITH SMART CONTEXT
   app.post(
     "/api/conversations/:id/messages",
     async (req: Request, res: Response) => {
@@ -110,17 +110,17 @@ export function registerChatRoutes(app: Express): void {
             .json({ error: "Gemini API key is not configured" });
         }
 
-        // 🔥 FETCH PLATFORM DATA FROM DB
+        // 🔥 FETCH PLATFORM DATA
         const roadmapStats = await chatStorage.getRoadmapStats();
 
-        // 🔥 OPTIONAL SMART FILTER (based on user query)
+        // 🔥 SMART FILTER
         const relevant = roadmapStats.filter((r) =>
           content.toLowerCase().includes(r.title.toLowerCase())
         );
 
         const selectedData = relevant.length ? relevant : roadmapStats;
 
-        // 🔥 BUILD CONTEXT
+        // 🔥 BUILD CONTEXT (IMPROVED)
         const platformContext = `
 You are an AI assistant for a developer learning platform.
 
@@ -130,20 +130,24 @@ Platform Overview:
 Roadmaps:
 ${selectedData
   .map(
-    (r) =>
-      `${r.title} (${r.difficulty}) → ${Math.round(
-        r.totalMinutes / 60
-      )} hours, ${r.stepCount} modules`
+    (r) => `
+${r.title} (${r.difficulty})
+- Duration: ${Math.round(r.totalMinutes / 60)} hours
+- Modules: ${r.stepCount}
+- Topics: ${r.steps.join(", ")}
+`
   )
   .join("\n")}
 
 Instructions:
-- Use this platform data when answering
-- Suggest relevant roadmaps based on user goals
-- Be concise and helpful
+- Always answer the user's question directly first
+- Then optionally suggest a relevant roadmap
+- Never refuse technical questions
+- Keep answers concise and helpful
+- Use roadmap data only when relevant
 `;
 
-        // 🔥 INJECT CONTEXT INTO GEMINI
+        // 🔥 GEMINI MESSAGES
         const geminiMessages = [
           {
             role: "user",
@@ -188,7 +192,7 @@ Instructions:
             .json({ error: "Empty response from Gemini API" });
         }
 
-        // SSE streaming
+        // 🔥 STREAM RESPONSE
         res.setHeader("Content-Type", "text/event-stream");
         res.setHeader("Cache-Control", "no-cache");
         res.setHeader("Connection", "keep-alive");
