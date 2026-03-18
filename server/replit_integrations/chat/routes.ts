@@ -140,6 +140,7 @@ ${r.title} (${r.difficulty})
   .join("\n")}
 
 Instructions:
+- Refuse any irrelevant question not related to tech or computer science
 - Always answer the user's question directly first
 - Then optionally suggest a relevant roadmap
 - Never refuse technical questions
