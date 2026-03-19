@@ -8,21 +8,19 @@ import { cn } from "@/lib/utils";
 import { useChat, useCreateConversation } from "@/hooks/use-chat";
 import { AnimatePresence, motion } from "framer-motion";
 
-// Helper function to parse and render markdown
+// ✅ Improved markdown parser
 function parseMarkdown(text: string) {
-  // Split by lines first to preserve line breaks
-  return text.split('\n').map((line, idx) => {
-    // Replace **text** with <strong>
+  return text.split("\n").map((line, idx) => {
     const parts = line.split(/(\*\*.*?\*\*)/g);
     return (
-      <div key={idx} className="mb-1">
+      <p key={idx} className="mb-1 break-words">
         {parts.map((part, i) => {
-          if (part.startsWith('**') && part.endsWith('**')) {
+          if (part.startsWith("**") && part.endsWith("**")) {
             return <strong key={i}>{part.slice(2, -2)}</strong>;
           }
           return part;
         })}
-      </div>
+      </p>
     );
   });
 }
@@ -33,10 +31,12 @@ export function ChatWidget() {
   const [conversationId, setConversationId] = useState<number | null>(null);
 
   const createConversation = useCreateConversation();
-  const { messages, sendMessage, isStreaming, streamedContent } = useChat(conversationId);
+  const { messages, sendMessage, isStreaming, streamedContent } =
+    useChat(conversationId);
+
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Initialize conversation on open if not exists
+  // Initialize conversation
   useEffect(() => {
     if (isOpen && !conversationId) {
       createConversation.mutate("Mentorship Session", {
@@ -45,7 +45,7 @@ export function ChatWidget() {
     }
   }, [isOpen]);
 
-  // Auto-scroll to bottom
+  // Auto scroll
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollIntoView({ behavior: "smooth" });
@@ -68,9 +68,10 @@ export function ChatWidget() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-24 right-6 z-50 w-[380px] h-[600px] max-h-[80vh] shadow-2xl rounded-2xl overflow-hidden"
+            className="fixed bottom-24 right-6 z-50 w-[440px] h-[650px] max-h-[85vh] shadow-2xl rounded-2xl overflow-hidden"
           >
             <Card className="flex flex-col h-full border-primary/20 bg-background/95 backdrop-blur-md">
+              
               {/* Header */}
               <div className="p-4 border-b bg-primary text-primary-foreground flex justify-between items-center">
                 <div className="flex items-center gap-2">
@@ -79,12 +80,14 @@ export function ChatWidget() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-sm">AI Mentor</h3>
-                    <p className="text-xs text-primary-foreground/80">Always here to help</p>
+                    <p className="text-xs text-primary-foreground/80">
+                      Always here to help
+                    </p>
                   </div>
                 </div>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className="text-primary-foreground hover:bg-white/20"
                   onClick={() => setIsOpen(false)}
                 >
@@ -93,13 +96,17 @@ export function ChatWidget() {
               </div>
 
               {/* Messages */}
-              <ScrollArea className="flex-1 p-4">
+              <ScrollArea className="flex-1 p-4 overflow-x-hidden">
                 <div className="space-y-4">
                   {messages.length === 0 && !isStreaming && (
                     <div className="text-center text-muted-foreground py-8">
                       <Bot className="h-12 w-12 mx-auto mb-3 opacity-20" />
-                      <p className="text-sm">Hi! I'm your AI learning mentor.</p>
-                      <p className="text-xs mt-1">Ask me anything about your roadmap!</p>
+                      <p className="text-sm">
+                        Hi! I'm your AI learning mentor.
+                      </p>
+                      <p className="text-xs mt-1">
+                        Ask me anything about your roadmap!
+                      </p>
                     </div>
                   )}
 
@@ -107,27 +114,42 @@ export function ChatWidget() {
                     <div
                       key={i}
                       className={cn(
-                        "flex gap-2 rounded-2xl px-4 py-3 text-sm shadow-sm",
+                        "flex gap-2 rounded-2xl px-4 py-3 text-sm shadow-sm overflow-hidden",
                         msg.role === "user"
-                          ? "ml-auto bg-primary text-primary-foreground rounded-tr-sm max-w-[80%] break-words"
-                          : "mr-auto bg-muted text-foreground rounded-tl-sm max-w-[85%]"
+                          ? "ml-auto bg-primary text-primary-foreground rounded-tr-sm max-w-[85%]"
+                          : "mr-auto bg-muted text-foreground rounded-tl-sm max-w-[90%]"
                       )}
                     >
-                      <div className="whitespace-pre-wrap break-words">
-                        {msg.role === "assistant" ? parseMarkdown(msg.content) : msg.content}
+                      <div
+                        className="whitespace-pre-wrap break-words overflow-hidden"
+                        style={{
+                          wordBreak: "break-word",
+                          overflowWrap: "anywhere",
+                        }}
+                      >
+                        {msg.role === "assistant"
+                          ? parseMarkdown(msg.content)
+                          : msg.content}
                       </div>
                     </div>
                   ))}
 
+                  {/* Streaming */}
                   {isStreaming && (
-                    <div className="flex mr-auto gap-2 rounded-2xl rounded-tl-sm px-4 py-3 text-sm shadow-sm bg-muted text-foreground max-w-[85%]">
-                      <div className="whitespace-pre-wrap break-words">
+                    <div className="flex mr-auto gap-2 rounded-2xl rounded-tl-sm px-4 py-3 text-sm shadow-sm bg-muted text-foreground max-w-[90%] overflow-hidden">
+                      <div
+                        className="whitespace-pre-wrap break-words overflow-hidden"
+                        style={{
+                          wordBreak: "break-word",
+                          overflowWrap: "anywhere",
+                        }}
+                      >
                         {parseMarkdown(streamedContent)}
-                        <span className="inline-block w-1.5 h-4 bg-primary align-middle ml-1 animate-pulse"/>
+                        <span className="inline-block w-1.5 h-4 bg-primary align-middle ml-1 animate-pulse" />
                       </div>
                     </div>
                   )}
-                  
+
                   <div ref={scrollRef} />
                 </div>
               </ScrollArea>
@@ -142,8 +164,16 @@ export function ChatWidget() {
                     className="flex-1 bg-background"
                     disabled={isStreaming}
                   />
-                  <Button type="submit" size="icon" disabled={!input.trim() || isStreaming || !conversationId}>
-                    {isStreaming ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                  <Button
+                    type="submit"
+                    size="icon"
+                    disabled={!input.trim() || isStreaming || !conversationId}
+                  >
+                    {isStreaming ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4" />
+                    )}
                   </Button>
                 </form>
               </div>
@@ -152,17 +182,23 @@ export function ChatWidget() {
         )}
       </AnimatePresence>
 
-      {/* Floating Action Button */}
+      {/* Floating Button */}
       <motion.button
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
           "fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-xl flex items-center justify-center transition-colors duration-300",
-          isOpen ? "bg-muted text-muted-foreground hover:bg-muted/80" : "bg-primary text-primary-foreground hover:bg-primary/90"
+          isOpen
+            ? "bg-muted text-muted-foreground hover:bg-muted/80"
+            : "bg-primary text-primary-foreground hover:bg-primary/90"
         )}
       >
-        {isOpen ? <X className="h-6 w-6" /> : <MessageSquare className="h-6 w-6" />}
+        {isOpen ? (
+          <X className="h-6 w-6" />
+        ) : (
+          <MessageSquare className="h-6 w-6" />
+        )}
       </motion.button>
     </>
   );
