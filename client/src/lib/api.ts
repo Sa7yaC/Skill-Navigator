@@ -10,7 +10,7 @@ export function getApiUrl(): string {
   
   // In development, use localhost:5000
   if (import.meta.env.DEV) {
-    return 'https://skill-navigator-r43j.onrender.com';
+    return 'https://thepolaris.online/';
   }
   
   // In production, use current origin
