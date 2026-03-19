@@ -10,7 +10,7 @@ export function getApiUrl(): string {
   
   // In development, use localhost:5000
   if (import.meta.env.DEV) {
-    return 'https://thepolaris.online/';
+    return 'https://thepolaris.online';
   }
   
   // In production, use current origin
